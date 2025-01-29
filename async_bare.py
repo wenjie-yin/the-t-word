@@ -1,7 +1,23 @@
 import asyncio
+import ollama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama
 
-# Initialize an empty list to store the inputs
-saved_input = []
+with open("system_prompts/default.txt", "r") as f:
+    system_text = f.read()
+
+template = ChatPromptTemplate([
+    ("system", system_text),
+    #("placeholder", "{last_snysnession_summary}"),
+    ("placeholder", "{conversation}"),
+    ("human", "{user_input}"),
+])
+
+conversation_history = []
+
+llm = ChatOllama(
+    model="llama3.2",
+    temperature=0)
 
 async def get_input():
     print("Start typing your input. Press Enter to record it. Press Ctrl+C to stop and save all input.")
@@ -9,12 +25,22 @@ async def get_input():
         try:
             # Wait for user input asynchronously
             user_input = await asyncio.to_thread(input)
-            saved_input.append(user_input)
-            print("noted")
+            # TODO: pass user_input to the model, get the response, print response
+            
+            prompt = template.invoke({"user_input": user_input, \
+                                      "conversation": conversation_history})
+            response = llm.invoke(prompt)
+            print(response.content)
+
+            # append both to history
+            conversation_history.append(('user', user_input))
+            conversation_history.append(('assistant', response.content))
+            
         except asyncio.CancelledError:
             break
 
 async def main():
+    
     input_task = asyncio.create_task(get_input())
 
     try:
