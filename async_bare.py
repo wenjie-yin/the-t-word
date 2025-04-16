@@ -10,7 +10,7 @@ template = ChatPromptTemplate([
     ("system", system_text),
     #("placeholder", "{last_snysnession_summary}"),
     ("placeholder", "{conversation}"),
-    ("human", "{user_input}"),
+    ("user", "{user_input}"),
 ])
 
 conversation_history = []
@@ -25,7 +25,6 @@ async def get_input():
         try:
             # Wait for user input asynchronously
             user_input = await asyncio.to_thread(input)
-            # TODO: pass user_input to the model, get the response, print response
             
             prompt = template.invoke({"user_input": user_input, \
                                       "conversation": conversation_history})
